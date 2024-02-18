@@ -119,14 +119,13 @@
 
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
 
-<p>Barycentric coordinates are numbers that indicate how much weight to give to certain values at a specified point. For example, referencing the picture below, let’s say that the bottom left vertex of a triangle is blue, the bottom right vertex is green, and the top vertex is red. We want to produce an image of the triangle so that the three colors blend together as they reach the center so that the entire shape looks like a smooth gradient. In order to determine the color of a pixel inside the triangle, we need a way to determine what weight to give to each of the three vertice’s colors at that specific pixel. This is where barycentric coordinates come into play. As an example, let’s say we want to determine the color of a pixel close to the bottom left vertex of the triangle. Since the pixel is much closer to the bottom left vertex than the other vertices, the barycentric coordinates that are calculated for that pixel will give much more weight to the bottom left vertex than the other two vertices. The derived barycentric coordinates will then be multiplied by the three colors in order to determine the color of that pixel. If this is performed for all pixels inside the triangle, then the resulting triangle will look like a smooth gradient of all three vertices’ colors.</p>
+<p>Barycentric coordinates are numbers that indicate how much weight to give to certain values at a specified point. For example, referencing the picture below, let’s say that the bottom left vertex of a triangle is red, the bottom right vertex is green, and the top vertex is blue. We want to produce an image of the triangle so that the three colors blend together as they reach the center so that the entire shape looks like a smooth gradient. In order to determine the color of a pixel inside the triangle, we need a way to determine what weight to give to each of the three vertice’s colors at that specific pixel. This is where barycentric coordinates come into play. As an example, let’s say we want to determine the color of the pixel V. Since the pixel seems to be slightly closer to the bottom right vertex than the other vertices, the barycentric coordinates that are calculated for that pixel will give a little more weight to the bottom right vertex than the other two vertices. The derived barycentric coordinates will then be multiplied by the three colors in order to determine the color of that pixel. If this is performed for all pixels inside the triangle, then the resulting triangle will look like a smooth gradient of all three vertices’ colors.</p>
 
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="screenshots/task 3.png" align="middle" width="400px"/>
-        <figcaption align="middle">Gradient Triangle</figcaption>
+        <img src="screenshots/gradient triangle.png" align="middle" width="400px"/>
       </td>
     </tr>
   </table>
