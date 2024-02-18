@@ -30,13 +30,22 @@
 <div>
 
 <h2 align="middle">Overview</h2>
-<p>Give a high-level overview of what you implemented in this homework Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.</p>
+
+<p>In this homework, I implemented triangle rasterization, supersampling, different transformations, interpolation using barycentric coordinates in order to allow gradient rendering, texture mapping, and two additional sampling methods that aid in texture mapping: pixel sampling and level sampling. While completing this homework, I gained a better understanding of concepts like antialiasing, sampling, barycentric coordinates, and texture mapping. I was also able to observe the drastic effects that different sampling techniques have on image rendering. This homework was pretty challenging and completing it gave me a greater appreciation for those that invented these techniques.</p>
 
 <h2 align="middle">Section I: Rasterization</h2>
 
 <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
 
-<p>In order to rasterize triangles, I first found the bounds of the </p>
+<p>In order to rasterize triangles, I first found the coordinates of the bounding box of the triangle that was being rasterized. In order to do this, I found the smallest x coordinate of the three vertices of the triangle rounded down to the nearest integer, the smallest y coordinate rounded down to the nearest integer, the largest x coordinate rounded up to the nearest integer, and the largest y coordinate rounded up to the nearest integer. These four numbers formed the coordinates of the bounding box. Then I looped through each coordinate (or pixel) within this bounding box, and for each pixel, I checked if the center of the pixel was inside or on the edge of the triangle using the point-in-triangle test. If the pixel was inside or on the edge of the triangle, then I filled that pixel with the triangle’s color by setting the corresponding pixel’s index in the sample_buffer to the color.</p>
+
+<br>
+
+<p>My algorithm’s time complexity is the area of the bounding box of the triangle since I check every pixel within the bounding box. Since this is equivalent to checking each sample within the bounding box, my algorithm is not worse than that.</p>
+
+<br>
+
+<p>While implementing this, one issue I ran into was not taking into account triangle winding. When I checked whether the pixel was inside or on the edge of the triangle, I only checked the triangle’s vertices in counter-clockwise order. This resulted in not all pixels being correctly filled in, so I made sure to also check the triangle’s vertices in clockwise order. As long as the pixel was determined to be inside or on the edge of the triangle in counterclockwise or clockwise order, then the pixel was filled in.</p>
 
 <div align="middle">
   <img src="screenshots/task 1.png" align="middle" width="400px"/>
@@ -46,7 +55,19 @@
 
 <h3 align="middle">Part 2: Antialiasing triangles</h3>
 
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+<p>In order to implement supersampling for rasterizing triangles, I changed the sample_buffer so that instead of each index representing the color of a pixel, each index represents the color of a subpixel. For example, if the sampling rate is 16, meaning that each pixel has 16 subpixels inside of it in a 4 x 4 grid representation, then 16 consecutive indices in the sample_buffer correspond to the colors of these 16 subpixels. And then in order to determine the final rendered color of the pixel, the colors of these 16 subpixels are averaged. In order to implement this change, I changed the size of sample_buffer to width * height * sample rate in order to accommodate for all the subpixels. Then for rasterizing a triangle, I still kept the same algorithm of finding the bounding box of the triangle and looping through each pixel inside the bounding box, but I also now looped through each subpixel of each pixel. For each subpixel, I checked if the center of each subpixel was inside or on the edge of the triangle. If it was, then I set the corresponding index in sample_buffer to the color. Then for filling the target framebuffer, I altered the method to first average the subpixels of each pixel in order to determine the final color of the pixel. Then this final color was put in the corresponding index of the rgb_framebuffer_target. I did not implement supersampling for lines and points though, so I altered those methods to set all subpixels of pixels that compose a line or point to the passed in color.</p>
+
+<br>
+
+<p>Supersampling is useful because without it, diagonal triangle edges and curved edges in rendered images end up looking extremely jagged since pixels are squares. This jagged appearance is called aliasing. With supersampling, the color of pixels on edges can take on a color that is in between the triangle’s color and the adjacent triangle’s color, leading to the appearance of a smoother edge. Thus supersampling anti-aliases images (smoothes the jagged edges).</p>
+
+<br>
+
+<p>The main difficulty I encountered while implementing supersampling was making sure I indexed correctly into the sample_buffer and calculated the correct position of the center of subpixels. In order to make sure I did these correctly, I drew out examples on paper in order to figure out the correct calculations to perform.</p>
+
+<br>
+
+<p>In the below three images, they are all of the same triangles but each is rendered with a different sampling rate. The top left image has a sampling rate of 1 which is equivalent to having no supersampling. The top right image has a sampling rate of 4. By looking at the edges of the triangles, it is clear that they appear to be smoother and less jagged in comparison to the triangles with no supersampling. Finally the bottom image has a sampling rate of 16. These triangles’ edges are visibly smoother and less jagged than the image with a sampling rate of 4 and the image with no supersampling. This is because each pixel has more subpixels that are averaged to determine the pixel’s final color, resulting in a color that transitions between the white background and the triangle much better.</p>
 
 <div align="middle">
   <table style="width=100%">
@@ -72,7 +93,20 @@
 
 <h3 align="middle">Part 3: Transforms</h3>
 
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+<p>In order to implement the three transforms scale, rotate, and translate, I altered the three corresponding functions to return 3 x 3 matrices that are then multiplied by the 2D vectors that are going to be transformed. The three matrices I returned are shown below.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="screenshots/task 3.png" align="middle" width="400px"/>
+        <figcaption align="middle">Transform Matrices</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>In the image below, I altered cubeman to be blue instead of red but kept its torso, inner arms and legs red in order to make it seem like it is wearing red clothes. I then also rotated its outer arms and moved them upwards in order to make it seem like it is waving with both arms.</p>
 
 <div align="middle">
   <table style="width=100%">
@@ -89,7 +123,33 @@
 
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
 
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+<p>Barycentric coordinates are numbers that indicate how much weight to give to certain values at a specified point. For example, referencing the picture below, let’s say that the bottom left vertex of a triangle is blue, the bottom right vertex is green, and the top vertex is red. We want to produce an image of the triangle so that the three colors blend together as they reach the center so that the entire shape looks like a smooth gradient. In order to determine the color of a pixel inside the triangle, we need a way to determine what weight to give to each of the three vertice’s colors at that specific pixel. This is where barycentric coordinates come into play. As an example, let’s say we want to determine the color of a pixel close to the bottom left vertex of the triangle. Since the pixel is much closer to the bottom left vertex than the other vertices, the barycentric coordinates that are calculated for that pixel will give much more weight to the bottom left vertex than the other two vertices. The derived barycentric coordinates will then be multiplied by the three colors in order to determine the color of that pixel. If this is performed for all pixels inside the triangle, then the resulting triangle will look like a smooth gradient of all three vertices’ colors.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="screenshots/task 3.png" align="middle" width="400px"/>
+        <figcaption align="middle">Gradient Triangle</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>In order to implement interpolation across triangles using barycentric coordinates, I used the same algorithm I used for implementing supersampling for rasterizing triangles, but now before checking that a specific subpixel is inside or on the edge of the triangle, I calculate the subpixel’s barycentric coordinates (alpha, beta, gamma) using the formulas shown below. Then in order to check if the subpixel is inside or on the edge of the triangle, I check whether all the barycentric coordinates are greater than or equal to 0. If the subpixel is inside or on the edge of the triangle, I multiply the triangle’s vertices’ colors by the calculated barycentric coordinates in order to get the color of the subpixel. I then set the subpixel’s corresponding index in sample_buffer to that calculated color.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="screenshots/task 4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Barycentric Coordinates Formulas</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>The below image is a color wheel that demonstrates how barycentric coordinates can be used to create color gradients.</p>
 
 <div align="middle">
   <table style="width=100%">
@@ -104,7 +164,15 @@
 
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
 
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+<p>Texture mapping is the process of applying or mapping an image to a shape or polygon. Pixel sampling for texture mapping is the process of choosing what pixels in texture space (also called textels) to use to calculate the color that should be rendered at a specific pixel. In order to implement pixel sampling for texture mapping, I used the same implementation I used for implementing interpolation across triangles using barycentric coordinates. But now after calculating the barycentric coordinates and checking that they are all greater than or equal to 0 in order to make sure that the current subpixel is inside the triangle, I use the barycentric coordinates to calculate the subpixel’s corresponding location in texture space by multiplying the barycentric coordinates with the provided texture space’s vertices’ coordinates. I then pass these new coordinates to one of two pixel sampling methods depending on which pixel sampling method is selected. These methods return the calculated color that the subpixel should take on, so then I set the subpixel’s corresponding index in sample_buffer to it. The two pixel sampling methods mentioned earlier are nearest sampling and bilinear sampling. Nearest sampling takes a coordinate in texture space, finds the texel that is closest in distance to the coordinate, and returns the color of that texel. Bilinear sampling takes a coordinate in texture space, finds the 4 nearest texels that surround the given coordinate, and averages the colors of those 4 texels in relation to their respective distances to the given coordinate in order to calculate the color that the given coordinate should take on.</p>
+
+<br>
+
+<p>The issue I faced while implementing this was forgetting to scale up the calculated coordinates in texture space. The calculated coordinates are values from 0 to 1. In order to get the correct coordinates in texture space, these values need to be multiplied by the width and height of the texture. Prior to realizing this, when I rendered the images, most were either blank or a singular color. But after correcting it, the images rendered correctly.</p>
+
+<br>
+
+<p>Below are four images where the same image is rendered with different pixel sampling methods and sampling rates. The left two images both have a sampling rate of 1, but the top one used nearest sampling while the bottom one used bilinear sampling. From the pixel inspector, you can see that the colors in the image with the bilinear sampling seem to blend into each other a little better than those in the image with nearest sampling. This same effect can be observed comparing the right two images. They both have a sampling rate of 16. The top one used nearest sampling while the bottom one used bilinear sampling. Again looking at the pixel inspector, the color changes in the bottom one are a little smoother and more gradual than the changes in the top one. The differences are subtle, but they are there. There will be a large difference between the two pixel sampling methods when other sampling techniques such as supersampling and level sampling are not also applied.</p>
 
 <div align="middle">
   <table style="width=100%">
@@ -134,7 +202,24 @@
 
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
 
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+<p>When texture mapping, there are instances when a pixel may span an area that is a lot larger or smaller than one texel. In these cases, the final image rendered contains aliasing artifacts, which is not great. In order to address this issue, we can use level sampling. Level sampling is the idea of storing many texture images in decreasing resolution (which are called mipmaps), determining which mipmap level is appropriate to sample from, and then taking the corresponding texel’s value from the determined mipmap. In order to implement level sampling for texture mapping, I used the same implementation I used for implementing pixel sampling for texture mapping, but now in addition to calculating the barycentric coordinates for the given (x, y) coordinate, I also calculated the barycentric coordinates for (x + 1, y) and (x, y + 1). Then using these additional barycentric coordinates, I calculated the corresponding coordinates in texture space for (x + 1, y) and (x, y + 1). After checking that the initial (x, y) coordinate is inside or on the edge of the triangle, I check which level sampling method is selected to determine what to do next. If the level sampling method is L_ZERO, this means that we should sample from mipmap level 0 which is the full resolution texture image. This is equivalent to the functionality of task 5 so I just call the sample_nearest or sample_bilinear function depending on what pixel sampling method is selected. If the level sampling method is L_NEAREST, I calculate the mipmap level by first calculating the two difference vectors between the texture space coordinates of (x + 1, y) and (x, y) and (x, y + 1), and (x, y), and then plugging these two difference vectors into the formula shown below. The returned value (D) may not be an integer, so I round to the nearest integer to determine the mipmap level. I then sample from this mipmap level’s texture image using whichever pixel sampling method is selected. Finally, if the level sampling method is L_LINEAR, I calculate the mipmap level using the procedure mentioned earlier. However, instead of rounding the returned value (D), I take the two integers surrounding D in order to get the two nearest mipmap levels. Then I sample from both mipmap levels’ texture images using whichever pixel sampling method is selected. Finally I linearly interpolate the two sampled color values to get the final color that the (x, y) subpixel should take on.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="screenshots/task 3.png" align="middle" width="400px"/>
+        <figcaption align="middle">Mipmap Level Formula</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>Comparing the three sampling techniques supersampling, pixel sampling, and level sampling, supersampling and level sampling use much more memory than pixel sampling does. Whether supersampling or level sampling uses more memory depends on the sampling rate and the number of mipmap levels being generated and stored. Comparing the speed of the techniques, I think pixel sampling is the fastest, followed by level sampling, and then supersampling. And lastly for antialiasing power, supersampling seems to be the most effective, followed by level sampling, and then pixel sampling. So pixel sampling is the fastest and uses the least memory, but it has the weakest antialiasing power. Supersampling has the greatest antialiasing power, but it is the slowest and uses more memory. And finally, level sampling seems to be in the middle of all three techniques in terms of these three factors.</p>
+
+<br>
+
+<p>Below are four images that depict the same image but with different level sampling and pixel sampling methods. The two images on the left both use nearest-pixel sampling, but the top uses zero-th mipmap level sampling while the bottom uses nearest mipmap level sampling. From the pixel inspector, it seems that the color changes in the bottom image are more gradual and smooth compared to the top image. The right two images both use bilinear sampling, but the top uses zero-th mipmap level sampling while the bottom uses nearest mipmap level sampling. Similar to the effect observed with the left two images, the color changes in the bottom image are more gradual and smooth, but it almost seems a little too blurred.</p>
 
 <div align="middle">
   <table style="width=100%">
