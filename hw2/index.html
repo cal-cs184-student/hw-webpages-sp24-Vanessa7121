@@ -39,17 +39,16 @@
 
 <body>
 
+<h2 align="middle"></h2><a href="https://cal-cs184-student.github.io/hw-webpages-sp24-Vanessa7121/hw2/index.html" target="_blank">Link to Webpage</a></h2>
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
 <h1 align="middle">Project 2: Mesh Edit</h1>
 <h2 align="middle">Vanessa Qiu</h2>
-
-<br><br>
 
 <div>
 
 <h2 align="middle">Overview</h2>
 <p>
-    YOUR RESPONSE GOES HERE
+  In this homework, I implemented de Casteljau’s algorithm for Bezier curves and surfaces, area-weighted vertex normals to allow for Phong shading, the remeshing operations edge flip and edge split, and loop subdivision for mesh upsampling. From this assignment, I learned how useful and prevalent linear interpolation is in computer graphics. It’s used in Bezier curves and surfaces and was used a lot in the last homework assignment as well. I also gained an in-depth understanding of how meshes are represented as well as an appreciation for how meticulous one needs to be when working with meshes. For example, in order to perform a seemingly simple remeshing operation like edge flip, there are so many pointer reassignments that are necessary in order to make sure the mesh is correct after the operation. One wrong reassignment and every operation afterwards is greatly impacted.
 </p>
 <br>
 
@@ -71,6 +70,7 @@
 <b>
   Below is an image of 6 control points that I chose in order to demonstrate how de Casteljau’s algorithm works to evaluate the Bezier curve.
 </b>
+<br>
 
 <!-- Example of including a single figure -->
 <div align="middle">
@@ -96,6 +96,7 @@
       </td>
     </tr>
     <br>
+    <br>
     <tr align="center">
       <td>
         <img src="screenshots/task1_4.png" align="middle" width="400px"/>
@@ -106,6 +107,7 @@
         <figcaption>Level 4</figcaption>
       </td>
     </tr>
+    <br>
     <br>
     <tr align="center">
       <td>
@@ -128,7 +130,7 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/task1_8.png" align="middle" width="40%">
+  <img src="screenshots/task1_8.png" align="middle" width="400px">
 </div>
 <br>
 
@@ -143,29 +145,27 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/bezier surface.png" align="middle" width="40%">
+  <img src="screenshots/bezier surface.png" align="middle" width="500px">
 </div>
 <br>
 
 <p>
   In order to implement de Casteljau’s algorithm to evaluate Bezier surfaces, I implemented a function called evaluateStep that behaves very similarly to the evaluateStep function I mentioned in the previous task; however, this time it operates on 3D points rather than 2D points. It takes a list of 3D points and linearly interpolates adjacent points using a parameter t. The resulting points are returned as a list. Then I implemented a function called evaluate1D that fully evaluates de Casteljau’s algorithm instead of just performing one step of the algorithm like evaluateStep does. This function takes in a list of 3D points and a parameter t and calls the evaluateStep function on the list of points. With each call, the returned list of points decreases in length by 1. This is repeated until the list of points has a length of 1. At this point, the algorithm is complete and the final evaluated point is returned. Finally, I implemented a third function called evaluate which evaluates a Bezier surface (or patch) given a matrix of control points and two parameters u and v. evaluate1D is called on each row of the matrix with the parameter u, and each returned point for each row is added to a list of intermediate points. evaluate1D is then called once more on this list of intermediate points with the parameter v in order to evaluate the final point on the Bezier surface. These three functions I implemented work together to evaluate Bezier surfaces.
 </p>
-<br>
 
 <b>
   Below are images of a teapot that is evaluated using my implementation of Bezier surfaces. The image on the left has the wireframe toggled on, and the image on the right has the wireframe toggled off.
 </b>
+<br>
 
 <div align="middle">
   <table style="width:100%">
     <tr align="center">
       <td>
         <img src="screenshots/task2_1.png" align="middle" width="400px"/>
-        <figcaption>Wireframe On</figcaption>
       </td>
       <td>
         <img src="screenshots/task2_2.png" align="middle" width="400px"/>
-        <figcaption>Wireframe Off</figcaption>
       </td>
     </tr>
   </table>
@@ -186,19 +186,17 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/triangle area.png" align="middle" width="40%">
+  <img src="screenshots/triangle area.png" align="middle" width="400px">
 </div>
 <br>
 
 <p>
   Then to get the area-weighted normal of each face, I multiplied each face’s orthogonal by its calculated area, since each face’s orthogonal is a normal of the face. I then added up all these area-weighted normals and called the resulting vector sum. I then normalized the vector called sum by dividing it by its magnitude.
 </p>
-<br>
 
 <p>
   The only issue I ran into while implementing area-weighted vertex normals is I didn’t multiply the area-weighted normal of each face by negative 1. This caused each of the computed normals to point towards the interior of the model instead of the exterior, which resulted in my teapot looking extremely dark.
 </p>
-<br>
 
 <b>
   Below are images of a teapot. The images on the left are the teapot with flat shading which does not use area-weighted vertex normals, and the images on the right are the teapot with Phong shading which does use area-weighted vertex normals. The images on the top row have the wireframe toggled on and the images on the bottom have the wireframe toggled off. Comparing the teapot images, it is clear that Phong shading does a better job of shading smooth surfaces.
@@ -242,7 +240,7 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/flip diagram.png" align="middle" width="400px">
+  <img src="screenshots/flip diagram.png" align="middle" width="650px">
 </div>
 <br>
 
@@ -261,6 +259,7 @@
       </td>
     </tr>
     <br>
+    <br>
     <tr align="center">
       <td>
         <img src="screenshots/task4_4.png" align="middle" width="400px"/>
@@ -276,6 +275,7 @@
 <b>
   The top image below shows the teapot after many edge flips. The image on the bottom left shows the same teapot with the same sequence of edge flips but with Phong shading toggled on. And finally the image on the bottom right is the same as the image on the bottom left but with the wireframe toggled off.
 </b>
+<br>
 
 <div align="middle">
   <img src="screenshots/task4_6.png" align="middle" width="400px">
@@ -310,7 +310,7 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/split diagram.png" align="middle" width="400px">
+  <img src="screenshots/split diagram.png" align="middle" width="650px">
 </div>
 <br>
 
@@ -329,6 +329,7 @@
         <img src="screenshots/task5_3.png" align="middle" width="400px"/>
       </td>
     </tr>
+    <br>
     <br>
     <tr align="center">
       <td>
@@ -357,6 +358,7 @@
       </td>
     </tr>
     <br>
+    <br>
     <tr align="center">
       <td>
         <img src="screenshots/task5_7.png" align="middle" width="400px"/>
@@ -367,6 +369,7 @@
     </tr>
   </table>
 </div>
+<br>
 
 <div align="middle">
   <img src="screenshots/task5_9.png" align="middle" width="400px">
@@ -380,7 +383,6 @@
 <p>
   After I initially implemented this task and tried to split some edges, whenever I split an edge, one of the outer edges of the two touching faces would disappear. And when I tried to switch smooth shading on, the program would freeze and then crash after a couple of minutes. After rethinking about my implementation, I realized that I had not set the outer edges’ (AC, CD, AB, BD) halfedge fields and the outer halfedges’ (twin1b, twin2c, twin1c, twin2b) twin fields to their new values. Once I changed my code to set these elements’ fields to their new values, edge splitting worked as intended and the program would not crash whenever I tried to switch smooth shading on.
 </p>
-<br>
 
 
 <h3 align="middle">Part 6: Loop Subdivision for Mesh Upsampling</h3>
@@ -394,11 +396,11 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/old vertex position diagram.png" align="middle" width="400px">
+  <img src="screenshots/old vertex position diagram.png" align="middle" width="650px">
 </div>
 <br>
 <div align="middle">
-  <img src="screenshots/old vertex position formula.png" align="middle" width="400px">
+  <img src="screenshots/old vertex position formula.png" align="middle" width="600px">
 </div>
 <br>
 
@@ -408,38 +410,33 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/new vertex position diagram.png" align="middle" width="400px">
+  <img src="screenshots/new vertex position diagram.png" align="middle" width="280px">
 </div>
 <br>
 <div align="middle">
-  <img src="screenshots/new vertex position formula.png" align="middle" width="400px">
+  <img src="screenshots/new vertex position formula.png" align="middle" width="340px">
 </div>
 <br>
 
 <p>
   For the third step, I again iterated through every edge in the mesh, but this time, I checked if each edge’s isSplit field was set to false. If it was, that meant that the edge was a part of the original mesh. So, I then called splitEdge on the edge and set the returned new vertex’s isNew field to true and its newPosition field to the value stored in the edge’s newPosition field.
 </p>
-<br>
 
 <p>
   For the fourth step, I iterated through all the edges in the mesh once more, but this time, I checked if each edge’s isNew field was set to true. If it was, that meant that the edge was created from an edge split and potentially needed to be flipped. In order to determine if the edge needed to be flipped, I then checked if the edge was connecting an old vertex with a new vertex. If it was, then I called flipEdge on the edge.
 </p>
-<br>
 
 <p>
   Finally for the fifth step, I iterated through all the vertices in the mesh and set each vertex’s position field to the value stored in its newPosition field.
 </p>
-<br>
 
 <p>
   In addition to implementing these five steps in the upsample function, I also added a boolean field to the Edge class called isSplit in order to indicate whether an edge is a part of the original mesh or not. I check this flag in step 3 of my implementation of upsample in order to determine whether to split an edge or not since I only want to split edges that haven’t been split before (edges that are a part of the original mesh). I then also altered the splitEdge function that I implemented in task 5 to set all edges’ isSplit and isNew fields accordingly.
 </p>
-<br>
 
 <p>
   After I initially implemented this task, when I tried to perform loop subdivision on a mesh, the program would seem to stall or freeze for a very long time before eventually crashing. I suspected there was probably an infinite loop somewhere in my implementation and re-evaluated my code. I realized that in step 3 of my implementation, I wasn’t checking whether an edge should be split or not before calling splitEdge. I knew I needed a way to determine whether an edge should be split or not, so I added the isSplit field to the Edge class and altered my implementation of the splitEdge function to set all edges’ isSplit fields accordingly. After implementing this change, loop subdivision worked correctly on all meshes.
 </p>
-<br>
 
 <b>
   The below 5 images show an icosahedron with each subsequent image showing the effect of performing another iteration of loop subdivision on the mesh. From these images, it seems that loop subdivision smooths out and rounds sharp corners and edges. As you can see, the fifth image of the icosahedron looks almost spherical.
@@ -455,6 +452,7 @@
         <img src="screenshots/task6_2.png" align="middle" width="400px"/>
       </td>
     </tr>
+    <br>
     <br>
     <tr align="center">
       <td>
@@ -476,7 +474,6 @@
 <p>
   In order to try to reduce this effect of sharp corners and edges being rounded out, I split edges that were contained within the 5 front faces of the icosahedron before performing any iterations of loop subdivision on the mesh. The top left image below shows all the newly created edges on the 5 front faces of the icosahedron after I split the contained edges multiple times. After pre-splitting these edges, I performed loop subdivision on the mesh multiple times, and the top right image shows the resulting mesh. As you can see, it seems that the edges and corners of the 5 front faces maintained some of their sharpness. And looking at the bottom left image, which shows the mesh from a different angle, you can see that the other faces where I didn’t pre-split any edges have completely rounded out. There are no defined edges or corners. The bottom right image shows the mesh with smooth shading toggled on and the wireframe toggled off. You can see that the faces where I performed no pre-splitting are completely rounded out and the faces where I did perform pre-splitting still have their edges and corners.
 </p>
-<br>
 
 <div align="middle">
   <table style="width:100%">
@@ -489,6 +486,7 @@
       </td>
     </tr>
     <br>
+    <br>
     <tr align="center">
       <td>
         <img src="screenshots/task6_16.png" align="middle" width="400px"/>
@@ -499,6 +497,7 @@
     </tr>
   </table>
 </div>
+<br>
 <br>
 
 <b>
@@ -516,6 +515,7 @@
         <img src="screenshots/task6_7.png" align="middle" width="400px"/>
       </td>
     </tr>
+    <br>
     <br>
     <tr align="center">
       <td>
