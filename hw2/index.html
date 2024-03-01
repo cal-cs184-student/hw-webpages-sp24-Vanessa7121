@@ -50,6 +50,7 @@
 <p>
   In this homework, I implemented de Casteljau’s algorithm for Bezier curves and surfaces, area-weighted vertex normals to allow for Phong shading, the remeshing operations edge flip and edge split, and loop subdivision for mesh upsampling. From this assignment, I learned how useful and prevalent linear interpolation is in computer graphics. It’s used in Bezier curves and surfaces and was used a lot in the last homework assignment as well. I also gained an in-depth understanding of how meshes are represented as well as an appreciation for how meticulous one needs to be when working with meshes. For example, in order to perform a seemingly simple remeshing operation like edge flip, there are so many pointer reassignments that are necessary in order to make sure the mesh is correct after the operation. One wrong reassignment and every operation afterwards is greatly impacted.
 </p>
+<br>
 
 
 <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
@@ -370,6 +371,7 @@
 <p>
   After I initially implemented this task and tried to split some edges, whenever I split an edge, one of the outer edges of the two touching faces would disappear. And when I tried to switch smooth shading on, the program would freeze and then crash after a couple of minutes. After rethinking about my implementation, I realized that I had not set the outer edges’ (AC, CD, AB, BD) halfedge fields and the outer halfedges’ (twin1b, twin2c, twin1c, twin2b) twin fields to their new values. Once I changed my code to set these elements’ fields to their new values, edge splitting worked as intended and the program would not crash whenever I tried to switch smooth shading on.
 </p>
+<br>
 
 
 <h3 align="middle">Part 6: Loop Subdivision for Mesh Upsampling</h3>
