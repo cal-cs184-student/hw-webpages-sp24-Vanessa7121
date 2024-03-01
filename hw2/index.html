@@ -50,7 +50,6 @@
 <p>
   In this homework, I implemented de Casteljau’s algorithm for Bezier curves and surfaces, area-weighted vertex normals to allow for Phong shading, the remeshing operations edge flip and edge split, and loop subdivision for mesh upsampling. From this assignment, I learned how useful and prevalent linear interpolation is in computer graphics. It’s used in Bezier curves and surfaces and was used a lot in the last homework assignment as well. I also gained an in-depth understanding of how meshes are represented as well as an appreciation for how meticulous one needs to be when working with meshes. For example, in order to perform a seemingly simple remeshing operation like edge flip, there are so many pointer reassignments that are necessary in order to make sure the mesh is correct after the operation. One wrong reassignment and every operation afterwards is greatly impacted.
 </p>
-<br>
 
 
 <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
@@ -64,15 +63,12 @@
 <p>
   De Casteljau’s algorithm is an algorithm that is used to evaluate bezier curves. Given some control points, de Casteljau’s algorithm linearly interpolates each two adjacent control points using a specified parameter t in order to derive the next level’s control points. This process is repeated until a singular control point is derived. And this entire process is repeated for different values of t so that the derived singular control point for each t value can be connected to form the final bezier curve. In this homework, I implemented de Casteljau’s algorithm by filling in the BezierCurve class’s evaluateStep function, which is a recursive function that evaluates the next level of control points when given a list of control points and parameter t. In order to implement this function, I iterated through the given list of points, and for each pair of adjacent points, I linearly interpolated the two points using the given parameter t and then inserted the evaluated point into a list of new control points that would be returned at the end of the function.
 </p>
-<br>
-
 
 <b>
   Below is an image of 6 control points that I chose in order to demonstrate how de Casteljau’s algorithm works to evaluate the Bezier curve.
 </b>
 <br>
 
-<!-- Example of including a single figure -->
 <div align="middle">
   <img src="screenshots/task1_1.png" align="middle" width="40%">
 </div>
@@ -82,7 +78,6 @@
   Each image below shows each step / level of the evaluation from the original control points down to the final evaluation point. The last image shows the evaluated Bezier curve as well.
 </b>
 
-<!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
     <tr align="center">
@@ -145,7 +140,7 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/bezier surface.png" align="middle" width="500px">
+  <img src="screenshots/bezier surface.png" align="middle" width="650px">
 </div>
 <br>
 
@@ -186,7 +181,7 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/triangle area.png" align="middle" width="400px">
+  <img src="screenshots/triangle area.png" align="middle" width="450px">
 </div>
 <br>
 
@@ -207,22 +202,18 @@
     <tr align="center">
       <td>
         <img src="screenshots/task3_1.png" align="middle" width="400px"/>
-        <figcaption>Flat Shading; Wireframe On</figcaption>
       </td>
       <td>
         <img src="screenshots/task3_2.png" align="middle" width="400px"/>
-        <figcaption>Phong Shading; Wireframe On</figcaption>
       </td>
     </tr>
     <br>
     <tr align="center">
       <td>
         <img src="screenshots/task3_3.png" align="middle" width="400px"/>
-        <figcaption>Flat Shading; Wireframe Off</figcaption>
       </td>
       <td>
         <img src="screenshots/task3_4.png" align="middle" width="400px"/>
-        <figcaption>Phong Shading; Wireframe Off</figcaption>
       </td>
     </tr>
   </table>
@@ -240,7 +231,7 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/flip diagram.png" align="middle" width="650px">
+  <img src="screenshots/flip diagram.png" align="middle" width="700px">
 </div>
 <br>
 
@@ -276,23 +267,20 @@
   The top image below shows the teapot after many edge flips. The image on the bottom left shows the same teapot with the same sequence of edge flips but with Phong shading toggled on. And finally the image on the bottom right is the same as the image on the bottom left but with the wireframe toggled off.
 </b>
 <br>
+<br>
 
 <div align="middle">
   <img src="screenshots/task4_6.png" align="middle" width="400px">
-  <figcaption>Flat Shading</figcaption>
 </div>
-<br>
 
 <div align="middle">
   <table style="width:100%">
     <tr align="center">
       <td>
         <img src="screenshots/task4_7.png" align="middle" width="400px"/>
-        <figcaption>Phong Shading</figcaption>
       </td>
       <td>
         <img src="screenshots/task4_8.png" align="middle" width="400px"/>
-        <figcaption>Wireframe Off</figcaption>
       </td>
     </tr>
   </table>
@@ -310,7 +298,7 @@
 <br>
 
 <div align="middle">
-  <img src="screenshots/split diagram.png" align="middle" width="650px">
+  <img src="screenshots/split diagram.png" align="middle" width="700px">
 </div>
 <br>
 
@@ -369,7 +357,6 @@
     </tr>
   </table>
 </div>
-<br>
 
 <div align="middle">
   <img src="screenshots/task5_9.png" align="middle" width="400px">
@@ -414,7 +401,7 @@
 </div>
 <br>
 <div align="middle">
-  <img src="screenshots/new vertex position formula.png" align="middle" width="340px">
+  <img src="screenshots/new vertex position formula.png" align="middle" width="290px">
 </div>
 <br>
 
@@ -464,7 +451,6 @@
     </tr>
   </table>
 </div>
-<br>
 
 <div align="middle">
   <img src="screenshots/task6_5.png" align="middle" width="400px">
@@ -527,7 +513,6 @@
     </tr>
   </table>
 </div>
-<br>
 
 <div align="middle">
   <img src="screenshots/task6_10.png" align="middle" width="400px">
