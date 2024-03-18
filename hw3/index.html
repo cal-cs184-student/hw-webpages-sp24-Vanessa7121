@@ -48,32 +48,11 @@
 
 <br><br>
 
-<p>All of the text in your write-up should be <em>in your own words</em>. If you need to add additional HTML features to this document, you can search the <a href="http://www.w3schools.com/">http://www.w3schools.com/</a> website for instructions. To edit the HTML, you can just copy and paste existing chunks and fill in the text and image file names appropriately.</p>
-<o>The website writeup is intended to be a self-contained walkthrough of the assignment: we want this to be a piece of work which showcases your understanding of relevant concepts through both mesh images as well as written explanations about what you did to complete each part of the assignment. Try to be as clear and organized as possible when writing about your own output files or extensions to the assignment. We want to understand what you've achieved and how you've done it!</p> 
-<p>If you are well-versed in web development, feel free to ditch this template and make a better looking page.</p>
-
-
-<p>Here are a few problems students have encountered in the past. Test your website on the instructional machines early!</p>
-<ul>
-<li>Your main report page should be called index.html.</li>
-<li>Be sure to include and turn in all of the other files (such as images) that are linked in your report!</li>
-<li>Use only <em>relative</em> paths to files, such as <pre>"./images/image.jpg"</pre>
-Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.jpg"</pre></li>
-<li>Pay close attention to your filename extensions. Remember that on UNIX systems (such as the instructional machines), capitalization matters. <pre>.png != .jpeg != .jpg != .JPG</pre></li>
-<li>Be sure to adjust the permissions on your files so that they are world readable. For more information on this please see this tutorial: <a href="http://www.grymoire.com/Unix/Permissions.html">http://www.grymoire.com/Unix/Permissions.html</a></li>
-<li>And again, test your website on the instructional machines early!</li>
-</ul>
-
-
-<p>Here is an example of how to include a simple formula:</p>
-<p align="middle"><pre align="middle">a^2 + b^2 = c^2</pre></p>
-<p>or, alternatively, you can include an SVG image of a LaTex formula.</p>
-
 <div>
 
 <h2 align="middle">Overview</h2>
 <p>
-    YOUR RESPONSE GOES HERE
+  In this project, I implemented camera ray generation, pixel sampling, ray-primitive intersections, the bounding volume hierarchy algorithm, different types of illumination such as direct and indirect illumination, the russian roulette algorithm for global illumination, and adaptive sampling. This project was extremely overwhelming and intimidating at first because there were a lot of diagrams and equations that I did not understand and didn’t think I could understand, but having completed it, I think it was a rewarding experience where I learned a lot about how cameras capture images and how images are rendered in regards to lighting and primitives.
 </p>
 <br>
 
@@ -83,23 +62,68 @@ Explain the triangle intersection algorithm you implemented in your own words.
 Show images with normal shading for a few small .dae files. -->
 
 <h3>
-  Walk through the ray generation and primitive intersection parts of the rendering pipeline.
+  Ray Generation
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+  In order to implement ray generation, I first had to convert the given coordinates (x, y) into camera space. Knowing that the coordinates (0, 0) and (1, 1) in image space map to (-tan(0.5 * hFov), -tan(0.5 * vFov), -1) and (tan(0.5 * hFov), tan(0.5 * vFov), -1) in camera space, I converted the coordinates (x, y) into camera space by using these formulas:
+</p>
+<br>
+
+<div align="middle">
+  <img src="screenshots/Part1_coil.png" align="middle" width="400px">
+  <figcaption>sky/CBcoil.dae</figcaption>
+</div>
+
+<p>
+  With these new x and y coordinates in camera space, I constructed the following 3D direction vector in camera space: (xCamera, yCamera, -1). I then converted this direction vector into a normalized unit vector, converted it into world space, and then used the camera’s position and this direction vector (both in world space) to create a new ray. Finally, I made sure to set the new ray’s min_t and max_t values to nClip and fClip (nClip and fClip represent the near and far clipping planes, meaning that anything beyond nClip and fClip along the ray is invisible to the camera) before returning the new ray.
+</p>
+
+<h3>
+  Pixel Sample Generation
+</h3>
+<p>
+  In order to implement sampling for pixels, I first generated ns_aa 2D coordinate samples that all were in the range [(0, 0), (1,1)]. Then for each of these samples, I added them to the given pixel’s coordinates that we were trying to sample in order to get the actual coordinate values of these samples. I then divided each of these new coordinates by the width and height of the sampleBuffer so that their coordinate values were in the range [0, 1]. With these normalized coordinates, I then passed them into the generate_ray() function in order to get the camera rays generated for those coordinates. Then I passed these new rays into the est_radiance_global_illumination() function in order to get the radiance of each of these rays. Then I added these radiances to a running sum, and once all the rays’ radiances were added to the sum, I divided this sum by the ns_aa value (the number of samples / camera rays we want to generate per pixel) in order to get the average radiance of all the sampled rays. Finally, I updated the sampleBuffer with this averaged radiance value for the given pixel and set the sampleCountBuffer to the ns_aa value.
 </p>
 <br>
 
 <h3>
-  Explain the triangle intersection algorithm you implemented in your own words.
+  Ray-Triangle Intersection
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+In this task I implemented two functions: has_intersection() and intersect(). The main difference between these two functions is that has_intersection() checks whether there is an intersection between the triangle and the inputted ray while intersect() updates the passed-in Intersection object if there is a valid intersection. In order to implement has_intersection(), I followed the Möller-Trumbore algorithm which is shown in the picture below. As an explanation of this algorithm and how I implemented it, I first got two edges of the triangle (E1 and E2) by subtracting vertex 0 (P0) from vertex 1 (P1) and vertex 2 (P2). I then got the S vector by subtracting vertex 0 (P0) from the ray’s origin (O). Then I calculated the S1 vector by taking the cross product of the ray’s destination vector D and E2. Now knowing the S1 vector and E1 vector, I took their dot product in order to get the denominator of the equation and check if the denominator value is valid or not. The denominator can’t be 0 and shouldn’t be too close to 0 either because then (1 / denominator) will be very close to infinity or negative infinity. In order to check this, I verified that the denominator is not in the range of (-epsilon, epsilon) before continuing the algorithm. Next, I calculated b1 by multiplying the dot product of S1 and S by the inverse of the denominator (1 / denominator). In order for the value of b1 to be valid, it must be in the range [0, 1], so I checked for that. If b1 was valid, then I calculated the S2 vector by taking the cross product of S and E1. Next, to calculate b2, I multiplied the dot product of S2 and D by the inverse of the denominator. In order for b2 to be valid, it must be greater than or equal to 0 and the sum of b1 and b2 must be less than or equal to 1. If those conditions were both satisfied, I then calculated t by multiplying the dot product of S2 and E2 by the inverse of the denominator. This t value represents where on the ray it intersects with the triangle; however, only if the t value is greater than epsilon does the ray actually intersect with the triangle, so I checked for that first. Next, an additional check has to be made to see if t is within the valid t range of the ray. t must be greater than or equal to the ray’s min_t value and must be less than or equal to the ray’s max_t value. This check is necessary because we only want to care about this specific intersection if it is closer than a previous intersection this ray has had with another primitive. If all of these conditions are met, then the function returns true. If not, then the function returns false. 
+</p>
+<br>
+
+<div align="middle">
+  <img src="screenshots/Part1_coil.png" align="middle" width="400px">
+  <figcaption>sky/CBcoil.dae</figcaption>
+</div>
+
+<p>
+  I implemented the function intersect() very similarly to has_intersection() in that I also followed the Möller-Trumbore algorithm and performed all the same calculations and checks. One of the few differences is that when checking t at the end of the function, I also checked to see if the t value was less than the passed-in intersection object’s t value because we only care if this new intersection is closer than this other intersection. If the t value is less than the passed-in intersection’s t value, then I updated all of the intersection object’s fields. I set it’s t field to the newly calculated t value, the n field to the interpolation of the triangle’s three vertex normals (I used b1, b2, and 1-b1-b2 as the barycentric coordinates), the primitive field to the current triangle, and the bsdf field to the current triangle’s bsdf. Finally, I also updated the ray’s max_t value to the new t value and then returned true. 
 </p>
 <br>
 
 <h3>
-  Show images with normal shading for a few small .dae files.
+  Ray-Sphere Intersection
+</h3>
+<p>
+In this task, I also implemented the has_intersection() and intersect() method but for an intersection with a sphere rather than a triangle. Similar to the triangle’s functions, the has_intersection() method checks if there is an intersection between the ray and the sphere while the intersect() method not only checks if there is an intersection but also updates the passed-in Intersection object’s field values if the intersection is valid. For these functions, I decided to create a helper function called test() that checks if there is an intersection between the ray and the sphere. In this test() function, I followed the calculations outlined in the image below to calculate the value(s) of t and then check if the value(s) of t corresponded to valid intersection(s) or not. To explain exactly what calculations I performed, I first calculated the values of a, b, and c as shown in the bottom left of the image below. For a, I took the dot product of the ray’s destination vector. For b, I subtracted the origin/center of the sphere from the origin of the ray, multiplied this difference by 2, and then took the dot product of this multiplied difference and the ray’s direction vector. For c, I subtracted the origin/center of the sphere from the origin of the ray, took the dot product of this difference and this difference again, and then subtracted the squared radius of the sphere from the previously calculated dot product. With a, b, and c all calculated out, I calculated the value of the discriminant in order to determine how many intersection points the ray would have with the sphere. If the discriminant was greater than 0, then there would be two intersection points and two t values. If the discriminant was equal to 0, then there would be one intersection point and only one t value. And if the discriminant was less than 0, then there would be no intersection points and no valid values for t. In the case where the discriminant was greater than 0, I calculated the two values of t by plugging a, b, and c into the quadratic formula. Then I individually checked whether both of the values of t were greater than or equal to the ray’s min_t value and less than or equal to the ray’s max_t value. Only the t values that were in bounds were considered valid values of t. In the case where the discriminant was equal to 0, I also calculated the t value by plugging in a, b, and c into the quadratic formula and checking if the resulting t value was within the bounds of the ray’s min_t and max_t values. And in the third case where the discriminant was less than 0, I just returned false while returning true for the other two cases. 
+</p>
+<br>
+
+<p>
+  With this helper function, for my implementation of the has_intersection() function, I called the helper function, and if it returned true, I returned true for the has_intersection() function and false otherwise. Then for the intersect() function, I called the helper function, which populated the passed in variables t1 and t2 with the valid values of t if there were any; if there were two valid values of t, then t1 stored the smaller t value and t2 stored the larger t value, and if there was only one valid value of t, then t1 stored this t’s value. Since we only care about the closest intersection, I only cared about the value stored in t1 if the call to the helper function returned true. So after calling the helper function, if it returned true, I checked to see if t1 was less than the t value stored in the passed-in intersection object. This check is necessary because we only care about this new intersection and this new t value if the intersection is closer than the previous intersection. If t1 is less than the existing t, then I update the intersection object’s fields. I set the t value to the newly calculated t value (t1), set the primitive field to the sphere, and set the bsdf field to the bsdf of the sphere. Also, in order to set the n field, I calculate the intersection point of the ray and the sphere by multiplying the ray’s director vector by t1 and adding it to the ray’s origin. Then with this intersection point, I subtract the sphere’s origin/center from it and then convert this new 3D vector into a normalized unit vector and set it to the n field of the intersection object. Additionally, I also set the ray’s max_t value to t1 since we always want to update the ray’s t bounds each time the ray intersects something closer than before. And finally, I return true. 
+</p>
+<br>
+
+<div align="middle">
+  <img src="screenshots/Part1_coil.png" align="middle" width="400px">
+  <figcaption>sky/CBcoil.dae</figcaption>
+</div>
+
+<h3>
+  Below are some small .dae files that have been rendered with normal shading.
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
@@ -134,12 +158,12 @@ Compare rendering times on a few scenes with moderately complex geometries with 
   Walk through your BVH construction algorithm. Explain the heuristic you chose for picking the splitting point.
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+    For my BVH construction algorithm, I first initialized two new vectors called left and right. The left vector will eventually store all the primitives that will be in the left child of the current BVHNode and the right vector will store all the primitives that will be in the right child of the current node. After initializing those vectors, I loop through all of the primitives using the start and end iterators passed into the function. As I loop through all the primitives, I expand a newly created bounding box called bbox to include each primitive’s bounding box. I also add the primitive’s bounding box’s centroid to a running sum of all the primitives’ bounding box’s centroids. After looping through all of the primitives, the bounding box bbox now encapsulates all the primitives, and the running sum is the total sum of all the primitive’s centroids. I then divide the sum by the number of primitives in order to get the average centroid of all the primitives. This average centroid will be used to split primitives into the left and right vectors later on. Next, I create a new BVHNode and instantiate it with the bounding box bbox. Then, I need to determine whether this new node will be a leaf node or an internal node in the BVH tree, so I check to see if the total number of primitives is less than or equal to the max_leaf_size. If it is, then this node will be a leaf node. If it is not, then this node will be an internal node. If the node is a leaf node, I set the node’s start field to the start iterator passed into the function and set the node’s end field to the end iterator passed into the function. If the node is an internal node, then I need to determine which axis to divide all of the primitives along in order to sort them into the left and right vectors. In order to determine which axis to split on, I get the bbox’s extent, which represents the diagonal of the bounding box and is a measure of how much the bounding box spans in all 3 axis directions. In order to try to ensure a better chance of having equal or almost equal numbers of primitives in the left and right vectors, I think it is best to split the bounding box along the axis that the box spans the most. So in order to determine which axis the bounding box spans the most along, I find the coordinate in the bbox’s extent vector that has the greatest magnitude and choose that coordinate’s corresponding axis to split on. So once I know which axis I want to split the box on, I loop through all the primitives one more time and compare each primitive’s centroid to the previously calculated average centroid. I specifically only compare the coordinate of the axis I determined I want to split on. So for example, if I determined from the extent that splitting on the x-axis is the best, I compare each primitive’s centroid’s x-coordinate to the x-coordinate of the average centroid. If it is less than or equal to the average centroid’s x-coordinate, I add that primitive to the left vector. If it is greater than the average centroid’s x-coordinate, then I add that primitive to the right vector. Once all the primitives are sorted into the left and right vectors, I then check to see if the length of either the left or right vectors is 0. I check this because there is a specific edge case that might occur where all the primitives have the same centroid, so the calculated average centroid will be the same as the centroids of all these primitives, resulting in all of the primitives being put into either the left or right vector. If this case occurs, I want to redistribute the primitives equally across both vectors, so I first sort whichever vector has all the primitives on the splitting axis coordinate as a safety measure, and then I loop through either the front half or back half of the vector (depending on whether it is the right or left vector that has all the primitives), removing primitives and pushing them onto the other vector. Once that case is taken care of, the left and right vectors should be balanced. Then,, for this internal node case, I set the node’s start and end fields to the passed in start and end iterators passed into the function, the node’s left field to a recursive call to construct_bvh() with the start of the left vector, end of the left vector, and max_leaf_size passed in as arguments, and the node’s right field to a recursive call to construct_bvh() with the start of the right vector, end of the right vector, and max_leaf_size passed in as arguments. Finally, regardless of whether the current node is a leaf node or internal node, I return the node.
 </p>
 
-<h3>
-  Show images with normal shading for a few large .dae files that you can only render with BVH acceleration.
-</h3>
+<p>
+  Below are some large .dae files that were rendered with BVH acceleration and normal shading. The leftmost image is of a dragon in a room. It was rendered with the settings -t 8 -r 480 360 and took 1.41 seconds to render with BVH. The middle image is of a statue named Lucy in a room. It was also rendered with the settings -t 8 -r 480 360 and took 1.95 seconds to render with BVH. The rightmost image is of wall-e on some sort of platform. It was rendered with the settings -t 8 -r 480 360 and took 2.50 seconds to render with BVH.
+</p>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
@@ -165,7 +189,7 @@ Compare rendering times on a few scenes with moderately complex geometries with 
   Compare rendering times on a few scenes with moderately complex geometries with and without BVH acceleration. Present your results in a one-paragraph analysis.
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+  In order to see the effect of BVH on rendering, I timed how long it took to render images with BVH acceleration and without BVH acceleration. For the image of the cow shown below, it is made up of 5,856 primitives. When I rendered it without BVH, it took 14.23 seconds, but when I rendered it with BVH, it took 0.35 seconds. Across both renders, I kept all the other settings the same. They both were rendered with 8 threads and a resolution of 800 by 600. With BVH, the cow was able to render 40 times faster. Next, for the image of Max Planck below, it is made up of 50,801 primitives. When I rendered it without BVH, it took 2 minutes and 12.25 seconds, but when I rendered it with BVH, it took 0.96 seconds. Again, like the cow, across both renders of the Max Plank image, I kept all the settings the same. They both were rendered with 8 threads and a resolution of 800 by 600. With BVH, the image of Max Planck was able to render 137 times faster.
 </p>
 <br>
 
@@ -195,7 +219,19 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
   Walk through both implementations of the direct lighting function.
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+  Uniform hemisphere sampling is the idea of casting randomly but uniformly sampled rays in different, random directions from an initial intersection / hit point in order to estimate how much light or radiance arrives at that intersection point. Knowing how much light arrives at that point then allows us to calculate how much light is reflected back towards a camera trying to capture the scene. Knowing how much light is reflected back towards the camera then allows us to determine the color of the corresponding pixel in the image that the camera is trying to capture.
+</p>
+
+<p>
+For my implementation of uniform hemisphere sampling, I first calculate the number of sample rays I want to generate and cast. In order to calculate this number, I multiply the number of lights in the scene by the value of ns_area_light, which is a variable that represents the number of samples we want to take per area light source. I store the number of samples in a variable called num_samples. Then I create a loop that loops num_samples times. During each loop, I call get_sample() on the PathTracer’s hemisphereSampler, which returns an object-space 3D vector that was uniformly randomly sampled on the hemisphere. With this sampled vector called w_in, I transform it into world space by multiplying it by the object to world transformation matrix called o2w. I store this w_in vector in world space in a variable called w_in_world. Then, I create a new Ray object called w_in_ray using w_in_world and hit_p, the last intersection point of the passed in ray. Then in order to avoid numerical precision issues, I set the min_t field of this newly created Ray to EPS_F. Next, I create a new Intersection object and pass it into the PathTracer’s bvh’s intersect() method, along with the newly created Ray w_in_ray and the root BVHNode of the PathTracer’s bvh. This method checks to see if the passed in Ray intersects with any primitives in the scene, and if it does, it populates the passed in Intersection object with information about the closest intersection. If the method returns true, meaning that the ray intersects with something in the scene, then I can calculate the estimated light that is reflected off the initial intersection point (hit_p) in the direction of the camera from the primitive that the Ray intersected with. In order to calculate this, I first obtain three values. The first is the emission of the primitive that the Ray intersected with when intersect() was called and returned true, the second is the reflectance of the initial intersection’s object, and the third is the cosine theta of w_in. With these three values, I multiply them all together and then multiply them by 2pi in order to get the estimated light that comes from the light source that the Ray intersected with and is reflected off the initial intersection point towards the direction of the camera. All of the estimated light values of all of the sampled rays are averaged in the end in order to determine the final estimated amount of direct light that is reflected off of the passed-in intersection point. 
+</p>
+
+<p>
+  Light importance sampling is different from uniform hemisphere sampling in that instead of randomly sampling rays to cast out to see if it intersects a light source in order to determine how much light an intersection point receives, light importance sampling samples directions/rays between each of the light sources in the scene and the intersection point and then checks to see whether other objects intersect the rays before they can intersect the light source. If a ray intersects a different object beforehand, then we know that at that ray/direction, no light is received from that light source that the ray would have intersected with. 
+</p>
+
+<p>
+  In order to implement light importance sampling, I first loop through all of the lights in the scene. For each light source, I check whether it is a point light source or not, since if a light source is a point light source, it only makes sense to sample it once rather than multiple times. Once I’ve determined how many times I am going to sample a given light source, then I enter another loop to generate the determined number of samples. This time, I call each light source’s sample_L() function to generate a radiance sample, w_in_world vector, and pdf (probability distribution function) value. With this w_in_world vector, the initial intersection point (hit_p), and the distance between hit_p and the light source (distToLight) subtracted by EPS_F, I create a new Ray object. Then I set this new Ray’s min_t value to EPS_F and max_t value to distToLight - EPS_F. Then I create a new Intersection object and call the PathTracer’s bvh’s intersect() method, passing in the newly created Ray and Intersection objects. If the Ray doesn’t intersect with something in the scene, then I can calculate the estimated light that that light source contributes. I calculate this by multiplying together the radiance obtained earlier from the call to sample_L(), the reflectance of the initial intersection’s object, and the cosine theta of w_in_world converted to object space, and then dividing the product by the pdf (probability distribution function) value that was obtained earlier during the call to sample_L(). Similarly to uniform hemisphere sampling, all of the light values of all of the sampled rays are averaged in the end in order to determine the final amount of direct light that is reflected off of the passed-in intersection point.
 </p>
 
 <h3>
@@ -241,6 +277,13 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
 <br>
 
 <h3>
+  Compare the results between uniform hemisphere sampling and lighting sampling in a one-paragraph analysis.
+</h3>
+
+<p>
+  Above are 4 images that show the difference between uniform hemisphere sampling and light importance sampling. The top two images are the same image of a bunny in a room, but the left one is rendered with uniform hemisphere sampling while the right one is rendered with light importance sampling. The bottom two images are of two spheres in a room, but like the bunny images, the left one is rendered with uniform hemisphere sampling while the right one is rendered with light importance sampling. From these images, it is clear to see that there is more noise in the rendered images when uniform hemisphere sampling is used compared to light importance sampling. The images on the right are extremely clear and sharp while the images on the left appear very fuzzy and unclear. </p>
+
+<h3>
   Focus on one particular scene with at least one area light and compare the noise levels in <b>soft shadows</b> when rendering with 1, 4, 16, and 64 light rays (the -l flag) and with 1 sample per pixel (the -s flag) using light sampling, <b>not</b> uniform hemisphere sampling.
 </h3>
 <!-- Example of including multiple figures -->
@@ -269,15 +312,7 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
   </table>
 </div>
 <p>
-    YOUR EXPLANATION GOES HERE
-</p>
-<br>
-
-<h3>
-  Compare the results between uniform hemisphere sampling and lighting sampling in a one-paragraph analysis.
-</h3>
-<p>
-    YOUR RESPONSE GOES HERE
+  Below are 4 images of the same bunny in the same room all rendered with the same settings except for a difference in the number of samples generated per area light. As you can see, as the number of samples per area light increases, the image becomes less noisy and more clear. The top left image with 1 light ray is extremely noisy while the bottom right image with 64 light rays looks much clearer and crisp. 
 </p>
 <br>
 
@@ -294,7 +329,22 @@ You will probably want to use the instructional machines for the above renders i
   Walk through your implementation of the indirect lighting function.
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+   For my implementation of the indirect lighting function, I split it into two different cases. The first case is if isAccumBounces is set to true, and the second case is if isAccumBounces is set to false. isAccumBounces indicates whether the light from each bounce of a ray should be accumulated or not. For the case where isAccumBounces is true, I first check if the base case of the ray’s depth being 0 is met or not. If it is, then the vector (0, 0, 0) is returned. That means that the ray’s maximum depth has been met and no more bounces should be considered. If the condition is not met, then I call one_bounce_radiance on the passed in ray and intersection objects in order to obtain the estimated light or radiance for the current ray bounce. I set the return value to a variable called L_out which keeps track of the light accumulated. Then, I sample a new direction by calling the previous intersection’s bsdf’s sample_f() function and use the generated w_in vector to create a new Ray with the intersection point hit_p. The sample_f() function also returns a reflectance value and generates a pdf value that will be used later. After creating the new Ray, I also make sure to set its min_t field to EPS_F and its depth to the previous Ray’s depth value minus 1. It is crucial to set this new Ray’s depth value to 1 less than the previous Ray’s depth value because the depth value keeps track of how many more ray bounces that are needed to be performed. Then I create a new Intersection object and call the PathTracer’s bvh’s intersect() function, passing in the new ray and new Intersection object. If there is no intersection, then I return L_out immediately since there is nothing else for the ray to bounce off of. If there is an intersection though, then I recursively call at_least_one_bounce_radiance() on the new Ray and Intersection object. The return value of this call is multiplied by the reflectance value generated earlier and the cosine theta of w_in and then divided by the pdf value also generated earlier before being added to the value of L_out. This will continue to recurse and add to L_out until the max_ray_depth is reached. 
+</p>
+<br>
+
+<p>
+  For the other case where isAccumBounces is false, generally most of the implementation is the same. The only differences are that the call to one_bounce_radiance() and the base case check are a little different, what happens when there is no intersection is a little different, and how L_out is updated each recursive call is a little different. Instead of first checking the base case if the ray’s depth is equal to 0, I first call one_bounce_radiance() and set it to L_out. Then, I check for the base case: if the ray’s depth is equal to 1. If it is, then I return L_out. For the case where there is no intersection between the newly created ray and the scene, instead of returning L_out, the vector (0, 0, 0) is returned since in the isAccumBounces = false case, if there is no intersection at any point, then (0, 0, 0) is returned instead of the current L_out value. And finally, when the recursive call to at_least_one_bounce_radiance is made and the resulting value is multiplied by the reflectance and cosine theta and divide by pdf, instead of adding the result to L_out, L_out’s value is just set to the result since we don’t want to accumulate L_out values across bounces. We just want the L_out value of the very last bounce.
+</p>
+<br>
+
+<p>
+  In task 4.3 when I implemented Russian Roulette, I altered my isAccumBounces = true code so that instead of immediately making the recursive call to at_least_one_bounce_radiance() if there is an intersection and adding the result to L_out, I added some checks. The first check is to see whether russian roulette should be applied to the current recursive call or not. Since Russian Roulette should only be applied to indirect lighting bounces after the first indirect lighting bounce, I check if the max_ray_depth is greater than 2 and if the current bounce is at least the second bounce (aka the first indirect bounce). If those conditions are satisfied, then I make a call to the coin_flip() function with a cpdf value of 0.4. If the coin_flip() is true, then I make the recursive call to at_least_one_bounce_radiance() and multiply and divide the result by the same values as beforehand, but I also divide the result another time by cpdf before adding the result to L_out. If the coin_flip() returns false, then additional ray bounces are terminated, so I just return L_out. In the case where the conditions for Russian Roulette to be applied are not satisfied, then the function runs as it did before. 
+</p>
+<br>
+
+<p>
+  In addition to what I implemented in the at_least_one_bounce_radiance() function for implementing indirect lighting, I also altered the est_radiance_global_illumination() function to account for the case where isAccumBounces is true and when it is false. If isAccumBounces is true, then in the case where isect.t is not INF_D, L_out is set to at_least_one_bounce_radiance(r, isect) + zero_bounce_radiance(r, isect) since we want to accumulate all of the radiance values from bounce 0 to bounce max_ray_depth. For the case where isAccumBounces is false, if max_ray_depth is set to 0, then L_out is set just to the return value of zero_bounce_radiance(r, isect) since we just want the radiance of the zero-th bounce in that case. If max_ray_depth is greater than 0, then L_out is set to the return value of at_least_one_bounce_radiance(r, isect).
 </p>
 <br>
 
@@ -337,9 +387,6 @@ You will probably want to use the instructional machines for the above renders i
   </table>
 </div>
 <br>
-<p>
-    YOUR EXPLANATION GOES HERE
-</p>
 <br>
 
 <h3>
@@ -381,9 +428,6 @@ You will probably want to use the instructional machines for the above renders i
   </table>
 </div>
 <br>
-<p>
-    YOUR EXPLANATION GOES HERE
-</p>
 <br>
 
 <h3>
@@ -425,9 +469,6 @@ You will probably want to use the instructional machines for the above renders i
   </table>
 </div>
 <br>
-<p>
-    YOUR EXPLANATION GOES HERE
-</p>
 <br>
 
 <h3>
@@ -469,9 +510,6 @@ You will probably want to use the instructional machines for the above renders i
   </table>
 </div>
 <br>
-<p>
-    YOUR EXPLANATION GOES HERE
-</p>
 <br>
 
 <h3>
@@ -517,9 +555,6 @@ You will probably want to use the instructional machines for the above renders i
   <figcaption>1024 samples per pixel (sky/CBspheres_lambertian.dae)</figcaption>
 </div>
 <br>
-<p>
-    YOUR EXPLANATION GOES HERE
-</p>
 <br>
 
 
@@ -531,7 +566,7 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
   Explain adaptive sampling. Walk through your implementation of the adaptive sampling.
 </h3>
 <p>
-    YOUR RESPONSE GOES HERE
+   For my implementation of adaptive sampling, I made some changes to my already implemented raytrace_pixel() function. In the formulas shown below, x_k represents every sample’s illuminance value. A sample’s illuminance is calculated by applying the .illum() function to the sample’s radiance value. As more samples are generated, if I keep a running sum of all the sample’s illuminances and illuminances squared, then I can easily calculate the mean illuminance and variance in illuminance values whenever I want in order to determine whether the samples have converged or not. So using this information, I made some changes to my original implementation of raytrace_pixel() in order to implement adaptive sampling. The first change is that after the call to est_radiance_global_illumination() on the newly sampled ray, I now get the illuminance of the radiance and add it to a variable called s1 that is keeping track of the running sum of illuminance values. I also add the square of the illuminance to a variable called s2 that is keeping track of the running sum of the squared illuminance values. The next change is that at the end of the for loop, I now perform a check to see if the number of samples taken so far is a multiple of samplesPerBatch. samplesPerBatch is a number that represents the interval length of samples at which a check for convergence can be performed. If the number of samples taken so far is a multiple of samplesPerBatch, then convergence check can be performed. In order to do so, the mean is calculated by dividing s1 by the number of samples so far. The variance is calculated using the formula shown below where n represents the number of samples so far. Then I is calculated using the formula in the top right. And finally, the calculated value of I is checked against maxTolerance * mean to see if it is less than or equal to that product. If it is, then the samples have converged, so sampling can stop for the pixel. The average radiance is then calculated by dividing the running sum of radiances by the number of samples taken before sampling was stopped, the sampleBuffer is updated with the calculated average, and the sampleCountBuffer is updated with the actual number of samples taken.
 </p>
 <br>
 
