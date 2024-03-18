@@ -70,8 +70,7 @@ Show images with normal shading for a few small .dae files. -->
 <br>
 
 <div align="middle">
-  <img src="screenshots/Part1_coil.png" align="middle" width="400px">
-  <figcaption>sky/CBcoil.dae</figcaption>
+  <img src="screenshots/part1_formulas.png" align="middle" width="400px">
 </div>
 
 <p>
@@ -95,8 +94,7 @@ In this task I implemented two functions: has_intersection() and intersect(). Th
 <br>
 
 <div align="middle">
-  <img src="screenshots/Part1_coil.png" align="middle" width="400px">
-  <figcaption>sky/CBcoil.dae</figcaption>
+  <img src="screenshots/moller_trumbore_slide.png" align="middle" width="400px">
 </div>
 
 <p>
@@ -118,8 +116,7 @@ In this task, I also implemented the has_intersection() and intersect() method b
 <br>
 
 <div align="middle">
-  <img src="screenshots/Part1_coil.png" align="middle" width="400px">
-  <figcaption>sky/CBcoil.dae</figcaption>
+  <img src="screenshots/sphere_ray_intersection.png" align="middle" width="400px">
 </div>
 
 <h3>
@@ -568,6 +565,10 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
 <p>
    For my implementation of adaptive sampling, I made some changes to my already implemented raytrace_pixel() function. In the formulas shown below, x_k represents every sample’s illuminance value. A sample’s illuminance is calculated by applying the .illum() function to the sample’s radiance value. As more samples are generated, if I keep a running sum of all the sample’s illuminances and illuminances squared, then I can easily calculate the mean illuminance and variance in illuminance values whenever I want in order to determine whether the samples have converged or not. So using this information, I made some changes to my original implementation of raytrace_pixel() in order to implement adaptive sampling. The first change is that after the call to est_radiance_global_illumination() on the newly sampled ray, I now get the illuminance of the radiance and add it to a variable called s1 that is keeping track of the running sum of illuminance values. I also add the square of the illuminance to a variable called s2 that is keeping track of the running sum of the squared illuminance values. The next change is that at the end of the for loop, I now perform a check to see if the number of samples taken so far is a multiple of samplesPerBatch. samplesPerBatch is a number that represents the interval length of samples at which a check for convergence can be performed. If the number of samples taken so far is a multiple of samplesPerBatch, then convergence check can be performed. In order to do so, the mean is calculated by dividing s1 by the number of samples so far. The variance is calculated using the formula shown below where n represents the number of samples so far. Then I is calculated using the formula in the top right. And finally, the calculated value of I is checked against maxTolerance * mean to see if it is less than or equal to that product. If it is, then the samples have converged, so sampling can stop for the pixel. The average radiance is then calculated by dividing the running sum of radiances by the number of samples taken before sampling was stopped, the sampleBuffer is updated with the calculated average, and the sampleCountBuffer is updated with the actual number of samples taken.
 </p>
+
+<div align="middle">
+  <img src="screenshots/part5_formulas.png" align="middle" width="400px">
+</div>
 <br>
 
 <h3>
