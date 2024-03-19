@@ -46,9 +46,7 @@
 <!-- Add Website URL -->
 <h2 align="middle">Website URL: <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-Vanessa7121/hw3/index.html">Website Link</a></h2>
 
-<br><br>
-
-<div>
+<br>
 
 <h2 align="middle">Overview</h2>
 <p>
@@ -70,7 +68,7 @@ Show images with normal shading for a few small .dae files. -->
 <br>
 
 <div align="middle">
-  <img src="screenshots/part1_formulas.png" align="middle" width="400px">
+  <img src="screenshots/part1_formulas.png" align="middle" width="600px">
 </div>
 
 <p>
@@ -83,7 +81,6 @@ Show images with normal shading for a few small .dae files. -->
 <p>
   In order to implement sampling for pixels, I first generated ns_aa 2D coordinate samples that all were in the range [(0, 0), (1,1)]. Then for each of these samples, I added them to the given pixel’s coordinates that we were trying to sample in order to get the actual coordinate values of these samples. I then divided each of these new coordinates by the width and height of the sampleBuffer so that their coordinate values were in the range [0, 1]. With these normalized coordinates, I then passed them into the generate_ray() function in order to get the camera rays generated for those coordinates. Then I passed these new rays into the est_radiance_global_illumination() function in order to get the radiance of each of these rays. Then I added these radiances to a running sum, and once all the rays’ radiances were added to the sum, I divided this sum by the ns_aa value (the number of samples / camera rays we want to generate per pixel) in order to get the average radiance of all the sampled rays. Finally, I updated the sampleBuffer with this averaged radiance value for the given pixel and set the sampleCountBuffer to the ns_aa value.
 </p>
-<br>
 
 <h3>
   Ray-Triangle Intersection
@@ -91,16 +88,14 @@ Show images with normal shading for a few small .dae files. -->
 <p>
 In this task I implemented two functions: has_intersection() and intersect(). The main difference between these two functions is that has_intersection() checks whether there is an intersection between the triangle and the inputted ray while intersect() updates the passed-in Intersection object if there is a valid intersection. In order to implement has_intersection(), I followed the Möller-Trumbore algorithm which is shown in the picture below. As an explanation of this algorithm and how I implemented it, I first got two edges of the triangle (E1 and E2) by subtracting vertex 0 (P0) from vertex 1 (P1) and vertex 2 (P2). I then got the S vector by subtracting vertex 0 (P0) from the ray’s origin (O). Then I calculated the S1 vector by taking the cross product of the ray’s destination vector D and E2. Now knowing the S1 vector and E1 vector, I took their dot product in order to get the denominator of the equation and check if the denominator value is valid or not. The denominator can’t be 0 and shouldn’t be too close to 0 either because then (1 / denominator) will be very close to infinity or negative infinity. In order to check this, I verified that the denominator is not in the range of (-epsilon, epsilon) before continuing the algorithm. Next, I calculated b1 by multiplying the dot product of S1 and S by the inverse of the denominator (1 / denominator). In order for the value of b1 to be valid, it must be in the range [0, 1], so I checked for that. If b1 was valid, then I calculated the S2 vector by taking the cross product of S and E1. Next, to calculate b2, I multiplied the dot product of S2 and D by the inverse of the denominator. In order for b2 to be valid, it must be greater than or equal to 0 and the sum of b1 and b2 must be less than or equal to 1. If those conditions were both satisfied, I then calculated t by multiplying the dot product of S2 and E2 by the inverse of the denominator. This t value represents where on the ray it intersects with the triangle; however, only if the t value is greater than epsilon does the ray actually intersect with the triangle, so I checked for that first. Next, an additional check has to be made to see if t is within the valid t range of the ray. t must be greater than or equal to the ray’s min_t value and must be less than or equal to the ray’s max_t value. This check is necessary because we only want to care about this specific intersection if it is closer than a previous intersection this ray has had with another primitive. If all of these conditions are met, then the function returns true. If not, then the function returns false. 
 </p>
-<br>
 
 <div align="middle">
-  <img src="screenshots/moller_trumbore_slide.png" align="middle" width="400px">
+  <img src="screenshots/moller_trumbore_slide.png" align="middle" width="550px">
 </div>
 
 <p>
   I implemented the function intersect() very similarly to has_intersection() in that I also followed the Möller-Trumbore algorithm and performed all the same calculations and checks. One of the few differences is that when checking t at the end of the function, I also checked to see if the t value was less than the passed-in intersection object’s t value because we only care if this new intersection is closer than this other intersection. If the t value is less than the passed-in intersection’s t value, then I updated all of the intersection object’s fields. I set it’s t field to the newly calculated t value, the n field to the interpolation of the triangle’s three vertex normals (I used b1, b2, and 1-b1-b2 as the barycentric coordinates), the primitive field to the current triangle, and the bsdf field to the current triangle’s bsdf. Finally, I also updated the ray’s max_t value to the new t value and then returned true. 
 </p>
-<br>
 
 <h3>
   Ray-Sphere Intersection
@@ -108,15 +103,13 @@ In this task I implemented two functions: has_intersection() and intersect(). Th
 <p>
 In this task, I also implemented the has_intersection() and intersect() method but for an intersection with a sphere rather than a triangle. Similar to the triangle’s functions, the has_intersection() method checks if there is an intersection between the ray and the sphere while the intersect() method not only checks if there is an intersection but also updates the passed-in Intersection object’s field values if the intersection is valid. For these functions, I decided to create a helper function called test() that checks if there is an intersection between the ray and the sphere. In this test() function, I followed the calculations outlined in the image below to calculate the value(s) of t and then check if the value(s) of t corresponded to valid intersection(s) or not. To explain exactly what calculations I performed, I first calculated the values of a, b, and c as shown in the bottom left of the image below. For a, I took the dot product of the ray’s destination vector. For b, I subtracted the origin/center of the sphere from the origin of the ray, multiplied this difference by 2, and then took the dot product of this multiplied difference and the ray’s direction vector. For c, I subtracted the origin/center of the sphere from the origin of the ray, took the dot product of this difference and this difference again, and then subtracted the squared radius of the sphere from the previously calculated dot product. With a, b, and c all calculated out, I calculated the value of the discriminant in order to determine how many intersection points the ray would have with the sphere. If the discriminant was greater than 0, then there would be two intersection points and two t values. If the discriminant was equal to 0, then there would be one intersection point and only one t value. And if the discriminant was less than 0, then there would be no intersection points and no valid values for t. In the case where the discriminant was greater than 0, I calculated the two values of t by plugging a, b, and c into the quadratic formula. Then I individually checked whether both of the values of t were greater than or equal to the ray’s min_t value and less than or equal to the ray’s max_t value. Only the t values that were in bounds were considered valid values of t. In the case where the discriminant was equal to 0, I also calculated the t value by plugging in a, b, and c into the quadratic formula and checking if the resulting t value was within the bounds of the ray’s min_t and max_t values. And in the third case where the discriminant was less than 0, I just returned false while returning true for the other two cases. 
 </p>
-<br>
 
 <p>
   With this helper function, for my implementation of the has_intersection() function, I called the helper function, and if it returned true, I returned true for the has_intersection() function and false otherwise. Then for the intersect() function, I called the helper function, which populated the passed in variables t1 and t2 with the valid values of t if there were any; if there were two valid values of t, then t1 stored the smaller t value and t2 stored the larger t value, and if there was only one valid value of t, then t1 stored this t’s value. Since we only care about the closest intersection, I only cared about the value stored in t1 if the call to the helper function returned true. So after calling the helper function, if it returned true, I checked to see if t1 was less than the t value stored in the passed-in intersection object. This check is necessary because we only care about this new intersection and this new t value if the intersection is closer than the previous intersection. If t1 is less than the existing t, then I update the intersection object’s fields. I set the t value to the newly calculated t value (t1), set the primitive field to the sphere, and set the bsdf field to the bsdf of the sphere. Also, in order to set the n field, I calculate the intersection point of the ray and the sphere by multiplying the ray’s director vector by t1 and adding it to the ray’s origin. Then with this intersection point, I subtract the sphere’s origin/center from it and then convert this new 3D vector into a normalized unit vector and set it to the n field of the intersection object. Additionally, I also set the ray’s max_t value to t1 since we always want to update the ray’s t bounds each time the ray intersects something closer than before. And finally, I return true. 
 </p>
-<br>
 
 <div align="middle">
-  <img src="screenshots/sphere_ray_intersection.png" align="middle" width="400px">
+  <img src="screenshots/sphere_ray_intersection.png" align="middle" width="550px">
 </div>
 
 <h3>
@@ -328,22 +321,18 @@ You will probably want to use the instructional machines for the above renders i
 <p>
    For my implementation of the indirect lighting function, I split it into two different cases. The first case is if isAccumBounces is set to true, and the second case is if isAccumBounces is set to false. isAccumBounces indicates whether the light from each bounce of a ray should be accumulated or not. For the case where isAccumBounces is true, I first check if the base case of the ray’s depth being 0 is met or not. If it is, then the vector (0, 0, 0) is returned. That means that the ray’s maximum depth has been met and no more bounces should be considered. If the condition is not met, then I call one_bounce_radiance on the passed in ray and intersection objects in order to obtain the estimated light or radiance for the current ray bounce. I set the return value to a variable called L_out which keeps track of the light accumulated. Then, I sample a new direction by calling the previous intersection’s bsdf’s sample_f() function and use the generated w_in vector to create a new Ray with the intersection point hit_p. The sample_f() function also returns a reflectance value and generates a pdf value that will be used later. After creating the new Ray, I also make sure to set its min_t field to EPS_F and its depth to the previous Ray’s depth value minus 1. It is crucial to set this new Ray’s depth value to 1 less than the previous Ray’s depth value because the depth value keeps track of how many more ray bounces that are needed to be performed. Then I create a new Intersection object and call the PathTracer’s bvh’s intersect() function, passing in the new ray and new Intersection object. If there is no intersection, then I return L_out immediately since there is nothing else for the ray to bounce off of. If there is an intersection though, then I recursively call at_least_one_bounce_radiance() on the new Ray and Intersection object. The return value of this call is multiplied by the reflectance value generated earlier and the cosine theta of w_in and then divided by the pdf value also generated earlier before being added to the value of L_out. This will continue to recurse and add to L_out until the max_ray_depth is reached. 
 </p>
-<br>
 
 <p>
   For the other case where isAccumBounces is false, generally most of the implementation is the same. The only differences are that the call to one_bounce_radiance() and the base case check are a little different, what happens when there is no intersection is a little different, and how L_out is updated each recursive call is a little different. Instead of first checking the base case if the ray’s depth is equal to 0, I first call one_bounce_radiance() and set it to L_out. Then, I check for the base case: if the ray’s depth is equal to 1. If it is, then I return L_out. For the case where there is no intersection between the newly created ray and the scene, instead of returning L_out, the vector (0, 0, 0) is returned since in the isAccumBounces = false case, if there is no intersection at any point, then (0, 0, 0) is returned instead of the current L_out value. And finally, when the recursive call to at_least_one_bounce_radiance is made and the resulting value is multiplied by the reflectance and cosine theta and divide by pdf, instead of adding the result to L_out, L_out’s value is just set to the result since we don’t want to accumulate L_out values across bounces. We just want the L_out value of the very last bounce.
 </p>
-<br>
 
 <p>
   In task 4.3 when I implemented Russian Roulette, I altered my isAccumBounces = true code so that instead of immediately making the recursive call to at_least_one_bounce_radiance() if there is an intersection and adding the result to L_out, I added some checks. The first check is to see whether russian roulette should be applied to the current recursive call or not. Since Russian Roulette should only be applied to indirect lighting bounces after the first indirect lighting bounce, I check if the max_ray_depth is greater than 2 and if the current bounce is at least the second bounce (aka the first indirect bounce). If those conditions are satisfied, then I make a call to the coin_flip() function with a cpdf value of 0.4. If the coin_flip() is true, then I make the recursive call to at_least_one_bounce_radiance() and multiply and divide the result by the same values as beforehand, but I also divide the result another time by cpdf before adding the result to L_out. If the coin_flip() returns false, then additional ray bounces are terminated, so I just return L_out. In the case where the conditions for Russian Roulette to be applied are not satisfied, then the function runs as it did before. 
 </p>
-<br>
 
 <p>
   In addition to what I implemented in the at_least_one_bounce_radiance() function for implementing indirect lighting, I also altered the est_radiance_global_illumination() function to account for the case where isAccumBounces is true and when it is false. If isAccumBounces is true, then in the case where isect.t is not INF_D, L_out is set to at_least_one_bounce_radiance(r, isect) + zero_bounce_radiance(r, isect) since we want to accumulate all of the radiance values from bounce 0 to bounce max_ray_depth. For the case where isAccumBounces is false, if max_ray_depth is set to 0, then L_out is set just to the return value of zero_bounce_radiance(r, isect) since we just want the radiance of the zero-th bounce in that case. If max_ray_depth is greater than 0, then L_out is set to the return value of at_least_one_bounce_radiance(r, isect).
 </p>
-<br>
 
 <h3>
   Show some images rendered with global (direct and indirect) illumination. Use 1024 samples per pixel.
@@ -424,8 +413,6 @@ You will probably want to use the instructional machines for the above renders i
     </tr>
   </table>
 </div>
-<br>
-<br>
 
 <h3>
   For CBbunny.dae, compare rendered views with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag). Use 1024 samples per pixel.
@@ -465,8 +452,6 @@ You will probably want to use the instructional machines for the above renders i
     </tr>
   </table>
 </div>
-<br>
-<br>
 
 <h3>
   For CBbunny.dae, output the Russian Roulette rendering with max_ray_depth set to 0, 1, 2, 3, 4, and 100(the -m flag). Use 1024 samples per pixel.
@@ -506,8 +491,6 @@ You will probably want to use the instructional machines for the above renders i
     </tr>
   </table>
 </div>
-<br>
-<br>
 
 <h3>
   Pick one scene and compare rendered views with various sample-per-pixel rates, including at least 1, 2, 4, 8, 16, 64, and 1024. Use 4 light rays.
@@ -552,7 +535,6 @@ You will probably want to use the instructional machines for the above renders i
   <figcaption>1024 samples per pixel (sky/CBspheres_lambertian.dae)</figcaption>
 </div>
 <br>
-<br>
 
 
 <h2 align="middle">Part 5: Adaptive Sampling</h2>
@@ -567,7 +549,7 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
 </p>
 
 <div align="middle">
-  <img src="screenshots/part5_formulas.png" align="middle" width="400px">
+  <img src="screenshots/part5_formulas.png" align="middle" width="550px">
 </div>
 <br>
 
