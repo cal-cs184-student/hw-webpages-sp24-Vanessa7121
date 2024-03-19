@@ -148,12 +148,32 @@ Compare rendering times on a few scenes with moderately complex geometries with 
   Walk through your BVH construction algorithm. Explain the heuristic you chose for picking the splitting point.
 </h3>
 <p>
-    For my BVH construction algorithm, I first initialized two new vectors called left and right. The left vector will eventually store all the primitives that will be in the left child of the current BVHNode and the right vector will store all the primitives that will be in the right child of the current node. After initializing those vectors, I loop through all of the primitives using the start and end iterators passed into the function. As I loop through all the primitives, I expand a newly created bounding box called bbox to include each primitive’s bounding box. I also add the primitive’s bounding box’s centroid to a running sum of all the primitives’ bounding box’s centroids. After looping through all of the primitives, the bounding box bbox now encapsulates all the primitives, and the running sum is the total sum of all the primitive’s centroids. I then divide the sum by the number of primitives in order to get the average centroid of all the primitives. This average centroid will be used to split primitives into the left and right vectors later on. Next, I create a new BVHNode and instantiate it with the bounding box bbox. Then, I need to determine whether this new node will be a leaf node or an internal node in the BVH tree, so I check to see if the total number of primitives is less than or equal to the max_leaf_size. If it is, then this node will be a leaf node. If it is not, then this node will be an internal node. If the node is a leaf node, I set the node’s start field to the start iterator passed into the function and set the node’s end field to the end iterator passed into the function. If the node is an internal node, then I need to determine which axis to divide all of the primitives along in order to sort them into the left and right vectors. In order to determine which axis to split on, I get the bbox’s extent, which represents the diagonal of the bounding box and is a measure of how much the bounding box spans in all 3 axis directions. In order to try to ensure a better chance of having equal or almost equal numbers of primitives in the left and right vectors, I think it is best to split the bounding box along the axis that the box spans the most. So in order to determine which axis the bounding box spans the most along, I find the coordinate in the bbox’s extent vector that has the greatest magnitude and choose that coordinate’s corresponding axis to split on. So once I know which axis I want to split the box on, I loop through all the primitives one more time and compare each primitive’s centroid to the previously calculated average centroid. I specifically only compare the coordinate of the axis I determined I want to split on. So for example, if I determined from the extent that splitting on the x-axis is the best, I compare each primitive’s centroid’s x-coordinate to the x-coordinate of the average centroid. If it is less than or equal to the average centroid’s x-coordinate, I add that primitive to the left vector. If it is greater than the average centroid’s x-coordinate, then I add that primitive to the right vector. Once all the primitives are sorted into the left and right vectors, I then check to see if the length of either the left or right vectors is 0. I check this because there is a specific edge case that might occur where all the primitives have the same centroid, so the calculated average centroid will be the same as the centroids of all these primitives, resulting in all of the primitives being put into either the left or right vector. If this case occurs, I want to redistribute the primitives equally across both vectors, so I first sort whichever vector has all the primitives on the splitting axis coordinate as a safety measure, and then I loop through either the front half or back half of the vector (depending on whether it is the right or left vector that has all the primitives), removing primitives and pushing them onto the other vector. Once that case is taken care of, the left and right vectors should be balanced. Then,, for this internal node case, I set the node’s start and end fields to the passed in start and end iterators passed into the function, the node’s left field to a recursive call to construct_bvh() with the start of the left vector, end of the left vector, and max_leaf_size passed in as arguments, and the node’s right field to a recursive call to construct_bvh() with the start of the right vector, end of the right vector, and max_leaf_size passed in as arguments. Finally, regardless of whether the current node is a leaf node or internal node, I return the node.
+  For my BVH construction algorithm, I first initialized two new vectors called left and right. The left vector will eventually store all the primitives that will be in the left child of the current BVHNode and the right vector will store all the primitives that will be in the right child of the current node. After initializing those vectors, I loop through all of the primitives using the start and end iterators passed into the function. As I loop through all the primitives, I expand a newly created bounding box called bbox to include each primitive’s bounding box. I also add the primitive’s bounding box’s centroid to a running sum of all the primitives’ bounding box’s centroids. After looping through all of the primitives, the bounding box bbox now encapsulates all the primitives, and the running sum is the total sum of all the primitive’s centroids. I then divide the sum by the number of primitives in order to get the average centroid of all the primitives. This average centroid will be used to split primitives into the left and right vectors later on. 
 </p>
 
 <p>
-  Below are some large .dae files that were rendered with BVH acceleration and normal shading. The leftmost image is of a dragon in a room. It was rendered with the settings -t 8 -r 480 360 and took 1.41 seconds to render with BVH. The middle image is of a statue named Lucy in a room. It was also rendered with the settings -t 8 -r 480 360 and took 1.95 seconds to render with BVH. The rightmost image is of wall-e on some sort of platform. It was rendered with the settings -t 8 -r 480 360 and took 2.50 seconds to render with BVH.
+  Next, I create a new BVHNode and instantiate it with the bounding box bbox. Then, I need to determine whether this new node will be a leaf node or an internal node in the BVH tree, so I check to see if the total number of primitives is less than or equal to the max_leaf_size. If it is, then this node will be a leaf node. If it is not, then this node will be an internal node. If the node is a leaf node, I set the node’s start field to the start iterator passed into the function and set the node’s end field to the end iterator passed into the function. If the node is an internal node, then I need to determine which axis to divide all of the primitives along in order to sort them into the left and right vectors. 
 </p>
+
+<p>
+  In order to determine which axis to split on, I get the bbox’s extent, which represents the diagonal of the bounding box and is a measure of how much the bounding box spans in all 3 axis directions. In order to try to ensure a better chance of having equal or almost equal numbers of primitives in the left and right vectors, I think it is best to split the bounding box along the axis that the box spans the most. So in order to determine which axis the bounding box spans the most along, I find the coordinate in the bbox’s extent vector that has the greatest magnitude and choose that coordinate’s corresponding axis to split on. 
+</p>
+
+<p>
+  So once I know which axis I want to split the box on, I loop through all the primitives one more time and compare each primitive’s centroid to the previously calculated average centroid. I specifically only compare the coordinate of the axis I determined I want to split on. So for example, if I determined from the extent that splitting on the x-axis is the best, I compare each primitive’s centroid’s x-coordinate to the x-coordinate of the average centroid. If it is less than or equal to the average centroid’s x-coordinate, I add that primitive to the left vector. If it is greater than the average centroid’s x-coordinate, then I add that primitive to the right vector. 
+</p>
+
+<p>
+  Once all the primitives are sorted into the left and right vectors, I then check to see if the length of either the left or right vectors is 0. I check this because there is a specific edge case that might occur where all the primitives have the same centroid, so the calculated average centroid will be the same as the centroids of all these primitives, resulting in all of the primitives being put into either the left or right vector. If this case occurs, I want to redistribute the primitives equally across both vectors, so I first sort whichever vector has all the primitives on the splitting axis coordinate as a safety measure, and then I loop through either the front half or back half of the vector (depending on whether it is the right or left vector that has all the primitives), removing primitives and pushing them onto the other vector. 
+</p>
+
+<p>
+  Once that case is taken care of, the left and right vectors should be balanced. Then, for this internal node case, I set the node’s start and end fields to the passed in start and end iterators passed into the function, the node’s left field to a recursive call to construct_bvh() with the start of the left vector, end of the left vector, and max_leaf_size passed in as arguments, and the node’s right field to a recursive call to construct_bvh() with the start of the right vector, end of the right vector, and max_leaf_size passed in as arguments. Finally, regardless of whether the current node is a leaf node or internal node, I return the node.
+</p>
+
+<h3>
+  Below are some large .dae files that were rendered with BVH acceleration and normal shading. The leftmost image is of a dragon in a room. It was rendered with the settings -t 8 -r 480 360 and took 1.41 seconds to render with BVH. The middle image is of a statue named Lucy in a room. It was also rendered with the settings -t 8 -r 480 360 and took 1.95 seconds to render with BVH. The rightmost image is of wall-e on some sort of platform. It was rendered with the settings -t 8 -r 480 360 and took 2.50 seconds to render with BVH.
+</h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
@@ -302,7 +322,7 @@ For my implementation of uniform hemisphere sampling, I first calculate the numb
   </table>
 </div>
 <p>
-  Below are 4 images of the same bunny in the same room all rendered with the same settings except for a difference in the number of samples generated per area light. As you can see, as the number of samples per area light increases, the image becomes less noisy and more clear. The top left image with 1 light ray is extremely noisy while the bottom right image with 64 light rays looks much clearer and crisp. 
+  Above are 4 images of the same bunny in the same room all rendered with the same settings except for a difference in the number of samples generated per area light. As you can see, as the number of samples per area light increases, the image becomes less noisy and more clear. The top left image with 1 light ray is extremely noisy while the bottom right image with 64 light rays looks much clearer and crisp. 
 </p>
 <br>
 
@@ -335,7 +355,7 @@ You will probably want to use the instructional machines for the above renders i
 </p>
 
 <h3>
-  Show some images rendered with global (direct and indirect) illumination. Use 1024 samples per pixel.
+  Below are some images rendered with global (direct and indirect) illumination. They were rendered with 1024 samples per pixel.
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
@@ -355,7 +375,7 @@ You will probably want to use the instructional machines for the above renders i
 <br>
 
 <h3>
-  Pick one scene and compare rendered views first with only direct illumination, then only indirect illumination. Use 1024 samples per pixel. (You will have to edit PathTracer::at_least_one_bounce_radiance(...) in your code to generate these views.)
+  Below are two images of two spheres in a room. The left image is rendered only with direct illumination while the right image is rendered with only indirect illumination. Comparing the two images, you can see that indirect illumination allows images to take on more realistic qualities. The spheres in the image on the right have some color reflected from the red and blue walls.
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
@@ -376,7 +396,7 @@ You will probably want to use the instructional machines for the above renders i
 <br>
 
 <h3>
-  For CBbunny.dae, render the mth bounce of light with max_ray_depth set to 0, 1, 2, 3, 4, and 5 (the -m flag), and isAccumBounces=false. Explain in your writeup what you see for the 2nd and 3rd bounce of light, and how it contributes to the quality of the rendered image compared to rasterization. Use 1024 samples per pixel.
+  Below are 6 images of a bunny in a room rendered with the mth bounce of light with max_ray_depth set to 0, 1, 2, 3, 4, and 5 (the -m flag), isAccumBounces=false, and 1024 samples per pixel. Comparing the 2nd and 3rd bounce of light images, the 2nd bounce image is overall brighter than the 3rd bounce image and we can see more texture and details on the bunny compared to the 3rd bounce image. Looking at the highlights and shadows on the bunny specifically, it seems that the highlights and shadows are flipped in the 3rd bounce image compared to the 2nd bounce image, meaning that where the bunny is highlighted in the 2nd bounce image, those areas are in shadow in the 3rd bounce image and vice versa. Looking at all 6 images, each successive bounce of light has less light, but in the case of rendering an image where isAccumBounces is true, each successive bounce added together come together to give the final image a much more realistic look.
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
@@ -415,7 +435,7 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 
 <h3>
-  For CBbunny.dae, compare rendered views with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag). Use 1024 samples per pixel.
+  Below are 6 images rendered with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag), isAccumBounces = true, and 1024 samples per pixel. The images with at least one bounce of indirect illumination added in (so where m >= 3) all look relatively similar since each successive bounce adds less light to the final image. 
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
@@ -454,7 +474,7 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 
 <h3>
-  For CBbunny.dae, output the Russian Roulette rendering with max_ray_depth set to 0, 1, 2, 3, 4, and 100(the -m flag). Use 1024 samples per pixel.
+  The below 6 images are rendered with Russian Roulette implemented and with max_ray_depth set to 0, 1, 2, 3, 4, and 100(the -m flag), isAccumBounces=true, and 1024 samples per pixel. Each image compared to its counterpart without Russian Roulette looks pretty similar. Even the image with m=100 looks pretty similar since there is a chance that successive bounces after the first bounce of indirect illumination might have been stopped from being added. Also, since each successive bounce of indirect illumination adds less light than the previous, the effect of adding up to 100 bounces of light would have pretty minimal effect on the final image.
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
@@ -493,7 +513,7 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 
 <h3>
-  Pick one scene and compare rendered views with various sample-per-pixel rates, including at least 1, 2, 4, 8, 16, 64, and 1024. Use 4 light rays.
+  The below 7 images are rendered with increasing numbers of samples per pixel. Each image is rendered with 4 light rays and isAccumBounces set to true As the number of samples per pixel increases, the images become less noisy.
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
@@ -554,7 +574,7 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
 <br>
 
 <h3>
-  Pick two scenes and render them with at least 2048 samples per pixel. Show a good sampling rate image with clearly visible differences in sampling rate over various regions and pixels. Include both your sample rate image, which shows how your adaptive sampling changes depending on which part of the image you are rendering, and your noise-free rendered result. Use 1 sample per light and at least 5 for max ray depth.
+  Below are two different images rendered with adaptive sampling and 2048 samples per pixel. The images on the left are the rendered images and the images on the right show the sample rate of each pixel. Red represents high sampling rates and blue represents low sampling rates. From the images on the right, we can see that parts of the image with greater detail and greater changes in lighting among neighboring pixels are given more samples per pixel since the areas of the image with less detail and less changes in lighting converge much quicker.
 </h3>
 <!-- Example of including multiple figures -->
 <div align="middle">
