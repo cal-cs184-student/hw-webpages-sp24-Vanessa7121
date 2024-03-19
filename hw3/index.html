@@ -374,9 +374,9 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 <br>
 
-<h3>
+<p>
   Below are two images of two spheres in a room. The left image is rendered only with direct illumination while the right image is rendered with only indirect illumination. Comparing the two images, you can see that indirect illumination allows images to take on more realistic qualities. The spheres in the image on the right have some color reflected from the red and blue walls.
-</h3>
+</p>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
@@ -395,9 +395,9 @@ You will probably want to use the instructional machines for the above renders i
 <br>
 <br>
 
-<h3>
+<p>
   Below are 6 images of a bunny in a room rendered with the mth bounce of light with max_ray_depth set to 0, 1, 2, 3, 4, and 5 (the -m flag), isAccumBounces=false, and 1024 samples per pixel. Comparing the 2nd and 3rd bounce of light images, the 2nd bounce image is overall brighter than the 3rd bounce image and we can see more texture and details on the bunny compared to the 3rd bounce image. Looking at the highlights and shadows on the bunny specifically, it seems that the highlights and shadows are flipped in the 3rd bounce image compared to the 2nd bounce image, meaning that where the bunny is highlighted in the 2nd bounce image, those areas are in shadow in the 3rd bounce image and vice versa. Looking at all 6 images, each successive bounce of light has less light, but in the case of rendering an image where isAccumBounces is true, each successive bounce added together come together to give the final image a much more realistic look.
-</h3>
+</p>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
@@ -434,9 +434,9 @@ You will probably want to use the instructional machines for the above renders i
   </table>
 </div>
 
-<h3>
+<p>
   Below are 6 images rendered with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag), isAccumBounces = true, and 1024 samples per pixel. The images with at least one bounce of indirect illumination added in (so where m >= 3) all look relatively similar since each successive bounce adds less light to the final image. 
-</h3>
+</p>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
@@ -473,9 +473,9 @@ You will probably want to use the instructional machines for the above renders i
   </table>
 </div>
 
-<h3>
+<p>
   The below 6 images are rendered with Russian Roulette implemented and with max_ray_depth set to 0, 1, 2, 3, 4, and 100(the -m flag), isAccumBounces=true, and 1024 samples per pixel. Each image compared to its counterpart without Russian Roulette looks pretty similar. Even the image with m=100 looks pretty similar since there is a chance that successive bounces after the first bounce of indirect illumination might have been stopped from being added. Also, since each successive bounce of indirect illumination adds less light than the previous, the effect of adding up to 100 bounces of light would have pretty minimal effect on the final image.
-</h3>
+</p>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
@@ -512,9 +512,9 @@ You will probably want to use the instructional machines for the above renders i
   </table>
 </div>
 
-<h3>
+<p>
   The below 7 images are rendered with increasing numbers of samples per pixel. Each image is rendered with 4 light rays and isAccumBounces set to true As the number of samples per pixel increases, the images become less noisy.
-</h3>
+</p>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
@@ -573,9 +573,9 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
 </div>
 <br>
 
-<h3>
+<p>
   Below are two different images rendered with adaptive sampling and 2048 samples per pixel. The images on the left are the rendered images and the images on the right show the sample rate of each pixel. Red represents high sampling rates and blue represents low sampling rates. From the images on the right, we can see that parts of the image with greater detail and greater changes in lighting among neighboring pixels are given more samples per pixel since the areas of the image with less detail and less changes in lighting converge much quicker.
-</h3>
+</p>
 <!-- Example of including multiple figures -->
 <div align="middle">
   <table style="width:100%">
